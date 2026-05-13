@@ -1,0 +1,319 @@
+Red Team & Blue Team Cybersecurity Field Cheat Sheet
+Expanded personal field manual - 139 Red Team commands and 127 Blue Team commands - generated 2026-05-13
+Scope and guardrails: This reference is for authorized security work only: lab practice, CTFs, internal audits, sanctioned penetration tests, SOC work, hardening, incident response, and defensive investigations. Use written permission, defined scope, and change-control discipline. When in doubt, do not run it.
+Red Team Command Index
+1. Ping sweep, 2. Nmap ping scan, 3. Nmap top ports, 4. Nmap full TCP, 5. Nmap service/version, 6. Nmap UDP top, 7. Nmap OS detect, 8. Nmap vuln scripts, 9. Masscan discovery, 10. Rustscan quick scan, 11. Netcat banner grab, 12. Curl headers, 13. Traceroute, 14. MTR route test, 15. ARP scan, 16. Dig A record, 17. Dig MX record, 18. Dig TXT record, 19. Dig NS record, 20. DNS zone transfer test, 21. Host lookup, 22. Reverse DNS, 23. Subfinder, 24. Amass enum passive, 25. Assetfinder, 26. HTTP probe, 27. Whois, 28. TheHarvester, 29. Wayback URLs, 30. Nikto web scan, 31. Gobuster dirs, 32. Gobuster vhosts, 33. FFUF directory fuzz, 34. FFUF vhost fuzz, 35. Feroxbuster recursive, 36. Wappalyzer CLI, 37. WhatWeb, 38. Curl GET, 39. Curl POST, 40. Curl custom header, 41. Curl follow redirects, 42. JWT decode, 43. Nuclei safe templates, 44. SSL scan, 45. TestSSL, 46. Burp proxy curl, 47. Robots file, 48. Sitemap file, 49. HTTP methods, 50. HTTP title, 51. SMB shares, 52. SMB connect share, 53. Enum4linux, 54. RPC null session, 55. CrackMapExec SMB auth check, 56. CME shares, 57. CME users, 58. CME sessions, 59. Impacket lookupsid, 60. Impacket SMB server, 61. Kerbrute userenum, 62. LDAP search naming contexts, 63. LDAP users, 64. LDAP computers, 65. BloodHound Python, 66. SharpHound collector, 67. GetNPUsers audit, 68. GetUserSPNs audit, 69. Net user domain, 70. Net group domain, 71. Net group members, 72. AD PowerShell users, 73. AD PowerShell computers, 74. Whoami, 75. ID, 76. Hostname, 77. Kernel, 78. OS release, 79. IP addresses, 80. Routes, 81. Listening sockets, 82. Processes, 83. Cron system, 84. User crontab, 85. Sudo rights, 86. SUID files, 87. SGID files, 88. Writable dirs, 89. World writable files, 90. Capabilities, 91. Find SSH keys, 92. History files, 93. Environment, 94. Mounts, 95. NFS exports, 96. LinPEAS run, 97. LSE run, 98. Whoami all, 99. Systeminfo, 100. IP config, 101. Route print, 102. Netstat, 103. Tasklist, 104. Services, 105. Service config, 106. Local users, 107. Local groups, 108. Administrators, 109. Shares, 110. Scheduled tasks, 111. PowerShell processes, 112. PowerShell services, 113. PowerUp checks, 114. WinPEAS run, 115. AWS identity, 116. AWS S3 list, 117. AWS IAM users, 118. AWS IAM policies, 119. AWS EC2 instances, 120. Azure account, 121. Azure users, 122. GCP account, 123. GCP projects, 124. Kubectl pods, 125. Kubectl auth check, 126. Kubectl secrets names, 127. Docker containers, 128. Docker images, 129. Docker inspect, 130. Python HTTP server, 131. Wget download, 132. Curl download, 133. Base64 encode, 134. Base64 decode, 135. SHA256 sum, 136. Tar gzip, 137. Grep recursive, 138. Find by name, 139. Python JSON pretty
+Red Team - Authorized Pentest / Lab Commands
+Network Recon
+# / Command	Purpose	Syntax	Example 1	Example 2
+1. Ping sweep	Quickly identify live hosts from a shell loop.	for ip in 10.10.10.{1..254}; do ping -c 1 -W 1 $ip | grep "64 bytes"; done	for ip in 192.168.56.{1..254}; do ping -c 1 -W 1 $ip | grep "64 bytes"; done	for ip in 192.168.56.{1..254}; do ping -c 1 -W 1 $ip | grep "64 bytes"; done
+2. Nmap ping scan	Discover live hosts without port scanning.	nmap -sn CIDR	nmap -sn 10.10.10.0/24	nmap -sn 10.10.10.0/24
+3. Nmap top ports	Scan the most common TCP ports.	nmap --top-ports 1000 TARGET	nmap --top-ports 1000 10.10.10.5	nmap --top-ports 1000 10.10.10.5
+4. Nmap full TCP	Scan all TCP ports quickly in a lab or approved test.	nmap -p- --min-rate 5000 TARGET	nmap -p- --min-rate 5000 10.10.10.5	nmap -p- --min-rate 5000 10.10.10.5
+5. Nmap service/version	Run default scripts and service detection on known ports.	nmap -sV -sC -p PORTS TARGET	nmap -sV -sC -p 22,80,443 10.10.10.5	nmap -sV -sC -p 22,80,443 10.10.10.5
+6. Nmap UDP top	Check common UDP services.	sudo nmap -sU --top-ports 100 TARGET	sudo nmap -sU --top-ports 100 10.10.10.5	sudo nmap -sU --top-ports 100 10.10.10.5
+7. Nmap OS detect	Attempt OS fingerprinting.	sudo nmap -O TARGET	sudo nmap -O 10.10.10.5	sudo nmap -O 10.10.10.5
+8. Nmap vuln scripts	Run Nmap vulnerability scripts for authorized validation.	nmap --script vuln TARGET	nmap --script vuln 10.10.10.5	nmap --script vuln 10.10.10.5
+9. Masscan discovery	Fast port discovery on approved ranges.	sudo masscan CIDR -pPORTS --rate RATE	sudo masscan 10.10.10.0/24 -p80,443 --rate 1000	sudo masscan 10.10.10.0/24 -p80,443 --rate 1000
+10. Rustscan quick scan	Fast port discovery with Nmap follow-up.	rustscan -a TARGET -- -sV	rustscan -a 10.10.10.5 -- -sV	rustscan -a 10.10.10.5 -- -sV
+11. Netcat banner grab	Grab a basic service banner.	nc -nv TARGET PORT	nc -nv 10.10.10.5 80	nc -nv 10.10.10.5 80
+12. Curl headers	Read HTTP response headers.	curl -I URL	curl -I https://example.com	curl -I https://example.com
+13. Traceroute	Map route path to a host.	traceroute TARGET	traceroute 10.10.10.5	traceroute 10.10.10.5
+14. MTR route test	Combine ping and traceroute for path checks.	mtr -rw TARGET	mtr -rw 10.10.10.5	mtr -rw 10.10.10.5
+15. ARP scan	Discover local LAN hosts via ARP.	sudo arp-scan -l	sudo arp-scan -l	sudo arp-scan -l
+DNS/OSINT
+# / Command	Purpose	Syntax	Example 1	Example 2
+16. Dig A record	Resolve IPv4 records.	dig DOMAIN A +short	dig example.com A +short	dig example.com A +short
+17. Dig MX record	Find mail exchangers.	dig DOMAIN MX +short	dig example.com MX +short	dig example.com MX +short
+18. Dig TXT record	Review TXT, SPF, and verification records.	dig DOMAIN TXT +short	dig example.com TXT +short	dig example.com TXT +short
+19. Dig NS record	Find authoritative name servers.	dig DOMAIN NS +short	dig example.com NS +short	dig example.com NS +short
+20. DNS zone transfer test	Check if DNS zone transfer is exposed.	dig axfr @NS DOMAIN	dig axfr @ns1.example.com example.com	dig axfr @ns1.example.com example.com
+21. Host lookup	Basic DNS lookup.	host DOMAIN	host example.com	host example.com
+22. Reverse DNS	Find PTR record.	dig -x IP +short	dig -x 8.8.8.8 +short	dig -x 8.8.8.8 +short
+23. Subfinder	Discover subdomains from public sources.	subfinder -d DOMAIN -silent	subfinder -d example.com -silent	subfinder -d example.com -silent
+24. Amass enum passive	Passive subdomain enumeration.	amass enum -passive -d DOMAIN	amass enum -passive -d example.com	amass enum -passive -d example.com
+25. Assetfinder	Find subdomains from public sources.	assetfinder --subs-only DOMAIN	assetfinder --subs-only example.com	assetfinder --subs-only example.com
+26. HTTP probe	Probe discovered hosts for HTTP services.	httpx -l hosts.txt -title -status-code	httpx -l subdomains.txt -title -status-code	httpx -l subdomains.txt -title -status-code
+27. Whois	Review domain registration information.	whois DOMAIN	whois example.com	whois example.com
+28. TheHarvester	Gather OSINT emails/hosts from approved sources.	theHarvester -d DOMAIN -b bing	theHarvester -d example.com -b bing	theHarvester -d example.com -b bing
+29. Wayback URLs	Pull archived URLs for recon.	waybackurls DOMAIN	waybackurls example.com	waybackurls example.com
+Web Testing
+# / Command	Purpose	Syntax	Example 1	Example 2
+30. Nikto web scan	Check common web server issues.	nikto -h URL	nikto -h http://10.10.10.5	nikto -h http://10.10.10.5
+31. Gobuster dirs	Discover web directories and files.	gobuster dir -u URL -w WORDLIST	gobuster dir -u http://10.10.10.5 -w /usr/share/wordlists/dirb/common.txt	gobuster dir -u http://10.10.10.5 -w /usr/share/wordlists/dirb/common.txt
+32. Gobuster vhosts	Discover virtual hosts.	gobuster vhost -u URL -w WORDLIST	gobuster vhost -u http://example.local -w vhosts.txt	gobuster vhost -u http://example.local -w vhosts.txt
+33. FFUF directory fuzz	Fast directory/file fuzzing.	ffuf -u URL/FUZZ -w WORDLIST	ffuf -u http://10.10.10.5/FUZZ -w common.txt	ffuf -u http://10.10.10.5/FUZZ -w common.txt
+34. FFUF vhost fuzz	Find virtual hosts through Host header fuzzing.	ffuf -u http://TARGET -H "Host: FUZZ.DOMAIN" -w WORDLIST	ffuf -u http://10.10.10.5 -H "Host: FUZZ.example.local" -w subdomains.txt	ffuf -u http://10.10.10.5 -H "Host: FUZZ.example.local" -w subdomains.txt
+35. Feroxbuster recursive	Recursive content discovery.	feroxbuster -u URL -w WORDLIST	feroxbuster -u http://10.10.10.5 -w common.txt	feroxbuster -u http://10.10.10.5 -w common.txt
+36. Wappalyzer CLI	Fingerprint web technologies.	wappalyzer URL	wappalyzer https://example.com	wappalyzer https://example.com
+37. WhatWeb	Identify web stack details.	whatweb URL	whatweb http://10.10.10.5	whatweb http://10.10.10.5
+38. Curl GET	Inspect HTTP response body and headers.	curl -i URL	curl -i http://10.10.10.5/login	curl -i http://10.10.10.5/login
+39. Curl POST	Send a simple POST request.	curl -i -X POST URL -d "k=v"	curl -i -X POST http://10.10.10.5/login -d "user=test&pass=test"	curl -i -X POST http://10.10.10.5/login -d "user=test&pass=test"
+40. Curl custom header	Test behavior with a custom header.	curl -H "Header: value" URL	curl -H "X-Forwarded-For: 127.0.0.1" http://10.10.10.5	curl -H "X-Forwarded-For: 127.0.0.1" http://10.10.10.5
+41. Curl follow redirects	Follow HTTP redirects.	curl -L URL	curl -L http://example.com	curl -L http://example.com
+42. JWT decode	Decode JWT claims without verifying signature.	python3 -m jwt.cli TOKEN --no-verify	python3 -m jwt.cli "$JWT" --no-verify	python3 -m jwt.cli "$JWT" --no-verify
+43. Nuclei safe templates	Run template-based checks with scoped severity.	nuclei -u URL -severity low,medium	nuclei -u https://example.com -severity low,medium	nuclei -u https://example.com -severity low,medium
+44. SSL scan	Review TLS ciphers and certificate details.	sslscan HOST	sslscan example.com	sslscan example.com
+45. TestSSL	Detailed TLS configuration review.	testssl.sh HOST	testssl.sh example.com	testssl.sh example.com
+46. Burp proxy curl	Send a request through Burp proxy.	curl -x http://127.0.0.1:8080 URL	curl -x http://127.0.0.1:8080 http://10.10.10.5	curl -x http://127.0.0.1:8080 http://10.10.10.5
+47. Robots file	Review robots.txt for exposed paths.	curl URL/robots.txt	curl http://10.10.10.5/robots.txt	curl http://10.10.10.5/robots.txt
+48. Sitemap file	Review sitemap for endpoints.	curl URL/sitemap.xml	curl https://example.com/sitemap.xml	curl https://example.com/sitemap.xml
+49. HTTP methods	Enumerate allowed HTTP methods.	nmap --script http-methods -p 80,443 TARGET	nmap --script http-methods -p 80 10.10.10.5	nmap --script http-methods -p 80 10.10.10.5
+50. HTTP title	Grab web page titles.	nmap --script http-title -p 80,443 TARGET	nmap --script http-title -p 80,443 10.10.10.5	nmap --script http-title -p 80,443 10.10.10.5
+SMB/Windows Enum
+# / Command	Purpose	Syntax	Example 1	Example 2
+51. SMB shares	List SMB shares anonymously where allowed.	smbclient -L //TARGET -N	smbclient -L //10.10.10.5 -N	smbclient -L //10.10.10.5 -N
+52. SMB connect share	Connect to a known SMB share.	smbclient //TARGET/SHARE -U USER	smbclient //10.10.10.5/Shared -U trev	smbclient //10.10.10.5/Shared -U trev
+53. Enum4linux	Enumerate SMB/Windows information.	enum4linux-ng TARGET	enum4linux-ng 10.10.10.5	enum4linux-ng 10.10.10.5
+54. RPC null session	Test RPC anonymous access.	rpcclient -U "" TARGET	rpcclient -U "" 10.10.10.5	rpcclient -U "" 10.10.10.5
+55. CrackMapExec SMB auth check	Validate authorized SMB credentials.	crackmapexec smb TARGET -u USER -p PASS	crackmapexec smb 10.10.10.0/24 -u auditor -p "$PASS"	crackmapexec smb 10.10.10.0/24 -u auditor -p "$PASS"
+56. CME shares	List accessible shares with approved creds.	crackmapexec smb TARGET -u USER -p PASS --shares	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --shares	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --shares
+57. CME users	Enumerate domain/local users with approved creds.	crackmapexec smb TARGET -u USER -p PASS --users	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --users	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --users
+58. CME sessions	Identify active SMB sessions where permitted.	crackmapexec smb TARGET -u USER -p PASS --sessions	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --sessions	crackmapexec smb 10.10.10.5 -u auditor -p "$PASS" --sessions
+59. Impacket lookupsid	Enumerate SIDs/users with valid creds.	lookupsid.py DOMAIN/USER:PASS@TARGET	lookupsid.py corp.local/auditor:Pass@10.10.10.5	lookupsid.py corp.local/auditor:Pass@10.10.10.5
+60. Impacket SMB server	Host a temporary SMB share in a lab.	smbserver.py SHARE PATH -smb2support	smbserver.py tools /tmp/tools -smb2support	smbserver.py tools /tmp/tools -smb2support
+Active Directory
+# / Command	Purpose	Syntax	Example 1	Example 2
+61. Kerbrute userenum	Enumerate valid AD users in authorized scope.	kerbrute userenum users.txt -d DOMAIN --dc DCIP	kerbrute userenum users.txt -d corp.local --dc 10.10.10.10	kerbrute userenum users.txt -d corp.local --dc 10.10.10.10
+62. LDAP search naming contexts	Find LDAP naming contexts.	ldapsearch -x -H ldap://DC -s base namingcontexts	ldapsearch -x -H ldap://10.10.10.10 -s base namingcontexts	ldapsearch -x -H ldap://10.10.10.10 -s base namingcontexts
+63. LDAP users	Query LDAP users with approved creds.	ldapsearch -x -H ldap://DC -D USER -w PASS -b BASE "(objectClass=user)"	ldapsearch -x -H ldap://10.10.10.10 -D auditor@corp.local -w "$PASS" -b "dc=corp,dc=local" "(objectClass=user)"	ldapsearch -x -H ldap://10.10.10.10 -D auditor@corp.local -w "$PASS" -b "dc=corp,dc=local" "(objectClass=user)"
+64. LDAP computers	Query AD computer objects.	ldapsearch -x -H ldap://DC -D USER -w PASS -b BASE "(objectClass=computer)"	ldapsearch -x -H ldap://10.10.10.10 -D auditor@corp.local -w "$PASS" -b "dc=corp,dc=local" "(objectClass=computer)"	ldapsearch -x -H ldap://10.10.10.10 -D auditor@corp.local -w "$PASS" -b "dc=corp,dc=local" "(objectClass=computer)"
+65. BloodHound Python	Collect AD relationships for graph analysis.	bloodhound-python -u USER -p PASS -d DOMAIN -c all -ns DCIP	bloodhound-python -u auditor -p "$PASS" -d corp.local -c all -ns 10.10.10.10	bloodhound-python -u auditor -p "$PASS" -d corp.local -c all -ns 10.10.10.10
+66. SharpHound collector	Collect AD data on an approved Windows host.	SharpHound.exe -c All	SharpHound.exe -c All -d corp.local	SharpHound.exe -c All -d corp.local
+67. GetNPUsers audit	Check for AS-REP roastable users in authorized tests.	GetNPUsers.py DOMAIN/ -usersfile users.txt -no-pass -dc-ip DCIP	GetNPUsers.py corp.local/ -usersfile users.txt -no-pass -dc-ip 10.10.10.10	GetNPUsers.py corp.local/ -usersfile users.txt -no-pass -dc-ip 10.10.10.10
+68. GetUserSPNs audit	Identify SPN accounts for authorized Kerberoast validation.	GetUserSPNs.py DOMAIN/USER:PASS -dc-ip DCIP -request	GetUserSPNs.py corp.local/auditor:Pass -dc-ip 10.10.10.10 -request	GetUserSPNs.py corp.local/auditor:Pass -dc-ip 10.10.10.10 -request
+69. Net user domain	List domain users from Windows.	net user /domain	net user /domain	net user /domain
+70. Net group domain	List domain groups from Windows.	net group /domain	net group /domain	net group /domain
+71. Net group members	List group members.	net group "Domain Admins" /domain	net group "Domain Admins" /domain	net group "Domain Admins" /domain
+72. AD PowerShell users	List AD users with RSAT.	Get-ADUser -Filter *	Get-ADUser -Filter * | Select Name,Enabled	Get-ADUser -Filter * | Select Name,Enabled
+73. AD PowerShell computers	List AD computers with RSAT.	Get-ADComputer -Filter *	Get-ADComputer -Filter * | Select Name,Enabled	Get-ADComputer -Filter * | Select Name,Enabled
+Linux Enum
+# / Command	Purpose	Syntax	Example 1	Example 2
+74. Whoami	Show current user.	whoami	whoami	whoami
+75. ID	Show user and group IDs.	id	id	id
+76. Hostname	Show host and OS info.	hostnamectl	hostnamectl	hostnamectl
+77. Kernel	Show kernel version.	uname -a	uname -a	uname -a
+78. OS release	Show Linux distribution details.	cat /etc/os-release	cat /etc/os-release	cat /etc/os-release
+79. IP addresses	List interfaces and IP addresses.	ip addr show	ip addr show	ip addr show
+80. Routes	Show routing table.	ip route	ip route	ip route
+81. Listening sockets	Show listening sockets with process info.	ss -tulpen	ss -tulpen	ss -tulpen
+82. Processes	List running processes.	ps auxww	ps auxww	ps auxww
+83. Cron system	Review scheduled jobs.	ls -la /etc/cron*	ls -la /etc/cron*	ls -la /etc/cron*
+84. User crontab	Show current user crontab.	crontab -l	crontab -l	crontab -l
+85. Sudo rights	Review permitted sudo commands.	sudo -l	sudo -l	sudo -l
+86. SUID files	Find SUID binaries for review.	find / -perm -4000 -type f 2>/dev/null	find / -perm -4000 -type f 2>/dev/null	find / -perm -4000 -type f 2>/dev/null
+87. SGID files	Find SGID binaries for review.	find / -perm -2000 -type f 2>/dev/null	find / -perm -2000 -type f 2>/dev/null	find / -perm -2000 -type f 2>/dev/null
+88. Writable dirs	Find writable directories.	find / -writable -type d 2>/dev/null	find / -writable -type d 2>/dev/null	find / -writable -type d 2>/dev/null
+89. World writable files	Find world-writable files.	find / -perm -0002 -type f 2>/dev/null	find / -perm -0002 -type f 2>/dev/null	find / -perm -0002 -type f 2>/dev/null
+90. Capabilities	List Linux file capabilities.	getcap -r / 2>/dev/null	getcap -r / 2>/dev/null	getcap -r / 2>/dev/null
+91. Find SSH keys	Locate user SSH key files for authorized review.	find /home -name "id_*" -type f 2>/dev/null	find /home -name "id_*" -type f 2>/dev/null	find /home -name "id_*" -type f 2>/dev/null
+92. History files	Find shell history files.	find /home -name ".*history" -type f 2>/dev/null	find /home -name ".*history" -type f 2>/dev/null	find /home -name ".*history" -type f 2>/dev/null
+93. Environment	Show environment variables.	env	env	env
+94. Mounts	Show mounted filesystems.	mount | column -t	mount | column -t	mount | column -t
+95. NFS exports	List NFS exports.	showmount -e TARGET	showmount -e 10.10.10.5	showmount -e 10.10.10.5
+96. LinPEAS run	Run Linux privilege escalation enumeration in a lab.	./linpeas.sh	chmod +x linpeas.sh && ./linpeas.sh	chmod +x linpeas.sh && ./linpeas.sh
+97. LSE run	Run Linux Smart Enumeration.	./lse.sh -l 1	chmod +x lse.sh && ./lse.sh -l 1	chmod +x lse.sh && ./lse.sh -l 1
+Windows Enum
+# / Command	Purpose	Syntax	Example 1	Example 2
+98. Whoami all	Show Windows token, groups, privileges.	whoami /all	whoami /all	whoami /all
+99. Systeminfo	Show OS, patch, and system info.	systeminfo	systeminfo	systeminfo
+100. IP config	Show Windows network configuration.	ipconfig /all	ipconfig /all	ipconfig /all
+101. Route print	Show Windows routes.	route print	route print	route print
+102. Netstat	Show connections and process IDs.	netstat -ano	netstat -ano	netstat -ano
+103. Tasklist	List processes with details.	tasklist /v	tasklist /v	tasklist /v
+104. Services	List Windows services.	sc query state= all	sc query state= all	sc query state= all
+105. Service config	Show service configuration.	sc qc SERVICE	sc qc Spooler	sc qc Spooler
+106. Local users	List local users.	net user	net user	net user
+107. Local groups	List local groups.	net localgroup	net localgroup	net localgroup
+108. Administrators	List local admins.	net localgroup administrators	net localgroup administrators	net localgroup administrators
+109. Shares	List local shares.	net share	net share	net share
+110. Scheduled tasks	List scheduled tasks.	schtasks /query /fo LIST /v	schtasks /query /fo LIST /v	schtasks /query /fo LIST /v
+111. PowerShell processes	List processes in PowerShell.	Get-Process	Get-Process | Sort CPU -Descending | Select -First 10	Get-Process | Sort CPU -Descending | Select -First 10
+112. PowerShell services	List services in PowerShell.	Get-Service	Get-Service | Where Status -eq Running	Get-Service | Where Status -eq Running
+113. PowerUp checks	Run approved Windows privilege escalation checks in lab.	Invoke-AllChecks	Import-Module .\PowerUp.ps1; Invoke-AllChecks	Import-Module .\PowerUp.ps1; Invoke-AllChecks
+114. WinPEAS run	Run Windows privilege escalation enumeration in lab.	winPEASx64.exe	winPEASx64.exe	winPEASx64.exe
+Cloud/K8s/Docker
+# / Command	Purpose	Syntax	Example 1	Example 2
+115. AWS identity	Confirm current AWS identity.	aws sts get-caller-identity	aws sts get-caller-identity	aws sts get-caller-identity
+116. AWS S3 list	List accessible S3 buckets.	aws s3 ls	aws s3 ls	aws s3 ls
+117. AWS IAM users	List IAM users if authorized.	aws iam list-users	aws iam list-users	aws iam list-users
+118. AWS IAM policies	List customer-managed IAM policies.	aws iam list-policies --scope Local	aws iam list-policies --scope Local	aws iam list-policies --scope Local
+119. AWS EC2 instances	List EC2 instances.	aws ec2 describe-instances	aws ec2 describe-instances --query "Reservations[].Instances[].InstanceId"	aws ec2 describe-instances --query "Reservations[].Instances[].InstanceId"
+120. Azure account	Show current Azure subscription context.	az account show	az account show	az account show
+121. Azure users	List Entra ID users if authorized.	az ad user list --output table	az ad user list --output table	az ad user list --output table
+122. GCP account	Show active GCP account.	gcloud auth list	gcloud auth list	gcloud auth list
+123. GCP projects	List accessible GCP projects.	gcloud projects list	gcloud projects list	gcloud projects list
+124. Kubectl pods	List Kubernetes pods in all namespaces.	kubectl get pods -A	kubectl get pods -A	kubectl get pods -A
+125. Kubectl auth check	List Kubernetes permissions.	kubectl auth can-i --list	kubectl auth can-i --list	kubectl auth can-i --list
+126. Kubectl secrets names	List secret objects names/metadata only.	kubectl get secrets -A	kubectl get secrets -A	kubectl get secrets -A
+127. Docker containers	List containers.	docker ps -a	docker ps -a	docker ps -a
+128. Docker images	List Docker images.	docker images	docker images	docker images
+129. Docker inspect	Inspect container configuration.	docker inspect CONTAINER	docker inspect web01	docker inspect web01
+Files/Transfer/Utilities
+# / Command	Purpose	Syntax	Example 1	Example 2
+130. Python HTTP server	Serve files from current directory in a lab.	python3 -m http.server PORT	python3 -m http.server 8000	python3 -m http.server 8000
+131. Wget download	Download a file from a URL.	wget URL -O FILE	wget http://10.10.10.2/tool.sh -O tool.sh	wget http://10.10.10.2/tool.sh -O tool.sh
+132. Curl download	Download a file with curl.	curl -o FILE URL	curl -o tool.sh http://10.10.10.2/tool.sh	curl -o tool.sh http://10.10.10.2/tool.sh
+133. Base64 encode	Encode a file for transfer.	base64 FILE	base64 note.txt	base64 note.txt
+134. Base64 decode	Decode a base64 file.	base64 -d FILE.b64 > FILE	base64 -d note.b64 > note.txt	base64 -d note.b64 > note.txt
+135. SHA256 sum	Hash a file.	sha256sum FILE	sha256sum evidence.bin	sha256sum evidence.bin
+136. Tar gzip	Compress a directory.	tar -czf OUT.tgz DIR	tar -czf logs.tgz /var/log	tar -czf logs.tgz /var/log
+137. Grep recursive	Search files recursively.	grep -R "PATTERN" PATH	grep -R "password" /var/www 2>/dev/null	grep -R "password" /var/www 2>/dev/null
+138. Find by name	Find files by name.	find PATH -name "PATTERN"	find / -name "*.conf" 2>/dev/null	find / -name "*.conf" 2>/dev/null
+139. Python JSON pretty	Pretty-print JSON.	python3 -m json.tool FILE	python3 -m json.tool data.json	python3 -m json.tool data.json
+ 
+Blue Team Command Index
+1. Failed logons 4625, 2. Successful logons 4624, 3. Explicit credentials 4648, 4. New service 7045, 5. Process creation 4688, 6. PowerShell 4104, 7. RDP logons, 8. Account created 4720, 9. Account enabled 4722, 10. Group member added 4728, 11. Local group member 4732, 12. Security log cleared 1102, 13. Processes, 14. Process details WMI, 15. Network connections, 16. Listening ports, 17. Services running, 18. Scheduled tasks, 19. Startup items, 20. Local users, 21. Local admins, 22. Shares, 23. Firewall profiles, 24. Defender status, 25. Defender threats, 26. DNS cache, 27. Installed software, 28. Recent files, 29. Auth log failed SSH, 30. Auth log accepted SSH, 31. Secure log failed SSH, 32. Journal failed ssh, 33. Sudo activity, 34. Syslog live, 35. Journal live, 36. Kernel messages, 37. Last logins, 38. Failed logins, 39. Lastlog, 40. Process tree, 41. Processes, 42. Top CPU, 43. Htop, 44. Listening ports, 45. Connections, 46. Open files network, 47. Open port owner, 48. Users logged in, 49. User sessions, 50. Accounts, 51. UID 0 accounts, 52. Sudoers, 53. Cron, 54. Systemd timers, 55. Services, 56. Startup services, 57. Recently changed files, 58. Large files, 59. SUID review, 60. Tcpdump host, 61. Tcpdump port, 62. Tcpdump write pcap, 63. Tcpdump read pcap, 64. Wireshark DNS filter, 65. Wireshark HTTP filter, 66. Wireshark IP filter, 67. Wireshark TCP stream, 68. Zeek read pcap, 69. Zeek conn log, 70. Suricata pcap, 71. Suricata fast log, 72. DNS query logs, 73. Nmap internal audit, 74. SHA256 hash, 75. MD5 hash, 76. File type, 77. Strings, 78. ExifTool, 79. Stat, 80. Find by hash list, 81. YARA scan, 82. ClamAV scan, 83. Volatility info, 84. Volatility processes, 85. Volatility network, 86. Timeline bodyfile, 87. Mactime timeline, 88. Sigma convert, 89. Splunk failed logons, 90. Splunk PowerShell, 91. Splunk rare process, 92. KQL failed signins, 93. KQL risky users, 94. KQL process events, 95. KQL network events, 96. Osquery processes, 97. Osquery users, 98. Osquery listening ports, 99. Osquery crontab, 100. UFW enable, 101. UFW allow SSH, 102. Firewalld services, 103. Firewalld add service, 104. SELinux status, 105. AppArmor status, 106. Auditd rules, 107. Lynis audit, 108. OpenSCAP eval, 109. Windows audit policy, 110. Windows firewall, 111. BitLocker status, 112. AWS identity, 113. CloudTrail lookup, 114. AWS public buckets, 115. AWS GuardDuty findings, 116. Azure account, 117. Azure sign-ins, 118. GCP auth, 119. GCP logging read, 120. Pods all namespaces, 121. K8s events, 122. K8s auth can-i, 123. K8s audit logs, 124. Docker ps, 125. Docker logs, 126. Docker inspect, 127. Docker stats
+Blue Team - SOC / DFIR / Hardening Commands
+Windows Logs
+# / Command	Purpose	Syntax	Example 1	Example 2
+1. Failed logons 4625	Find failed Windows logon events.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4625}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4625} | Select -First 20	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4625} | Select -First 20
+2. Successful logons 4624	Find successful Windows logon events.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624} | Select -First 20	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624} | Select -First 20
+3. Explicit credentials 4648	Find explicit credential use.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4648}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4648}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4648}
+4. New service 7045	Find newly installed Windows services.	Get-WinEvent -FilterHashtable @{LogName="System"; Id=7045}	Get-WinEvent -FilterHashtable @{LogName="System"; Id=7045}	Get-WinEvent -FilterHashtable @{LogName="System"; Id=7045}
+5. Process creation 4688	Find process creation events when enabled.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4688}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4688} | Select -First 20	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4688} | Select -First 20
+6. PowerShell 4104	Find PowerShell script block logging.	Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-PowerShell/Operational"; Id=4104}	Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-PowerShell/Operational"; Id=4104}	Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-PowerShell/Operational"; Id=4104}
+7. RDP logons	Find RDP logons.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624} | ? {$_.Message -match "Logon Type:\s+10"}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624} | ? {$_.Message -match "Logon Type:\s+10"}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4624} | ? {$_.Message -match "Logon Type:\s+10"}
+8. Account created 4720	Find newly created accounts.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4720}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4720}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4720}
+9. Account enabled 4722	Find enabled accounts.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4722}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4722}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4722}
+10. Group member added 4728	Find additions to privileged global groups.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4728}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4728}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4728}
+11. Local group member 4732	Find additions to local groups.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4732}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4732}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=4732}
+12. Security log cleared 1102	Detect cleared Security logs.	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=1102}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=1102}	Get-WinEvent -FilterHashtable @{LogName="Security"; Id=1102}
+Windows Triage
+# / Command	Purpose	Syntax	Example 1	Example 2
+13. Processes	List running processes.	Get-Process	Get-Process | Sort CPU -Descending | Select -First 15	Get-Process | Sort CPU -Descending | Select -First 15
+14. Process details WMI	Show command lines for processes.	Get-CimInstance Win32_Process | Select Name,ProcessId,CommandLine	Get-CimInstance Win32_Process | Select Name,ProcessId,CommandLine | Select -First 20	Get-CimInstance Win32_Process | Select Name,ProcessId,CommandLine | Select -First 20
+15. Network connections	List TCP connections.	Get-NetTCPConnection	Get-NetTCPConnection | Where State -eq Established	Get-NetTCPConnection | Where State -eq Established
+16. Listening ports	List listening TCP ports.	Get-NetTCPConnection -State Listen	Get-NetTCPConnection -State Listen	Get-NetTCPConnection -State Listen
+17. Services running	List running services.	Get-Service | Where Status -eq Running	Get-Service | Where Status -eq Running	Get-Service | Where Status -eq Running
+18. Scheduled tasks	List scheduled tasks.	Get-ScheduledTask	Get-ScheduledTask | Where State -ne Disabled	Get-ScheduledTask | Where State -ne Disabled
+19. Startup items	List startup commands.	Get-CimInstance Win32_StartupCommand	Get-CimInstance Win32_StartupCommand | Select Name,Command,Location	Get-CimInstance Win32_StartupCommand | Select Name,Command,Location
+20. Local users	List local users.	Get-LocalUser	Get-LocalUser | Select Name,Enabled,LastLogon	Get-LocalUser | Select Name,Enabled,LastLogon
+21. Local admins	List local administrators.	Get-LocalGroupMember Administrators	Get-LocalGroupMember Administrators	Get-LocalGroupMember Administrators
+22. Shares	List SMB shares.	Get-SmbShare	Get-SmbShare	Get-SmbShare
+23. Firewall profiles	Show firewall profile status.	Get-NetFirewallProfile	Get-NetFirewallProfile | Select Name,Enabled	Get-NetFirewallProfile | Select Name,Enabled
+24. Defender status	Show Microsoft Defender status.	Get-MpComputerStatus	Get-MpComputerStatus	Get-MpComputerStatus
+25. Defender threats	List Defender threat history.	Get-MpThreat	Get-MpThreat	Get-MpThreat
+26. DNS cache	Review DNS cache.	Get-DnsClientCache	Get-DnsClientCache | Select -First 20	Get-DnsClientCache | Select -First 20
+27. Installed software	List installed software.	Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*	Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select DisplayName,DisplayVersion	Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select DisplayName,DisplayVersion
+28. Recent files	Find recently modified user files.	Get-ChildItem $env:USERPROFILE -Recurse -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending	Get-ChildItem C:\Users -Recurse -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending | Select -First 20	Get-ChildItem C:\Users -Recurse -ErrorAction SilentlyContinue | Sort LastWriteTime -Descending | Select -First 20
+Linux Logs
+# / Command	Purpose	Syntax	Example 1	Example 2
+29. Auth log failed SSH	Find failed SSH logins on Debian/Ubuntu.	grep "Failed password" /var/log/auth.log	grep "Failed password" /var/log/auth.log | tail -20	grep "Failed password" /var/log/auth.log | tail -20
+30. Auth log accepted SSH	Find successful SSH logins.	grep "Accepted" /var/log/auth.log	grep "Accepted" /var/log/auth.log | tail -20	grep "Accepted" /var/log/auth.log | tail -20
+31. Secure log failed SSH	Find failed SSH logins on RHEL-like systems.	grep "Failed password" /var/log/secure	grep "Failed password" /var/log/secure | tail -20	grep "Failed password" /var/log/secure | tail -20
+32. Journal failed ssh	Review SSH service logs.	journalctl -u ssh --since "24 hours ago"	journalctl -u ssh --since "24 hours ago"	journalctl -u ssh --since "24 hours ago"
+33. Sudo activity	Review sudo activity.	grep "sudo" /var/log/auth.log	grep "sudo" /var/log/auth.log | tail -50	grep "sudo" /var/log/auth.log | tail -50
+34. Syslog live	Watch syslog live.	tail -f /var/log/syslog	tail -f /var/log/syslog	tail -f /var/log/syslog
+35. Journal live	Watch systemd journal live.	journalctl -f	journalctl -f	journalctl -f
+36. Kernel messages	Review kernel messages with readable time.	dmesg -T	dmesg -T | tail -50	dmesg -T | tail -50
+37. Last logins	Show login history.	last	last -a | head -20	last -a | head -20
+38. Failed logins	Show failed login history where available.	lastb	sudo lastb | head -20	sudo lastb | head -20
+39. Lastlog	Show last login per user.	lastlog	lastlog	lastlog
+Linux Triage
+# / Command	Purpose	Syntax	Example 1	Example 2
+40. Process tree	Show process tree with PIDs and args.	pstree -ap	pstree -ap	pstree -ap
+41. Processes	List processes with full command lines.	ps auxww	ps auxww | head	ps auxww | head
+42. Top CPU	Interactive resource monitoring.	top	top	top
+43. Htop	Interactive process monitor.	htop	htop	htop
+44. Listening ports	Show listening ports and processes.	ss -tulpen	sudo ss -tulpen	sudo ss -tulpen
+45. Connections	Show TCP connections.	ss -antp	sudo ss -antp	sudo ss -antp
+46. Open files network	List processes with network sockets.	lsof -i	sudo lsof -i	sudo lsof -i
+47. Open port owner	Find process using a port.	lsof -i :PORT	sudo lsof -i :443	sudo lsof -i :443
+48. Users logged in	Show logged-in users.	w	w	w
+49. User sessions	Show session details.	who -a	who -a	who -a
+50. Accounts	List accounts, UID, shells.	cut -d: -f1,3,7 /etc/passwd	cut -d: -f1,3,7 /etc/passwd	cut -d: -f1,3,7 /etc/passwd
+51. UID 0 accounts	Find accounts with UID 0.	awk -F: "$3 == 0 {print}" /etc/passwd	awk -F: "$3 == 0 {print}" /etc/passwd	awk -F: "$3 == 0 {print}" /etc/passwd
+52. Sudoers	Show current user sudo rights.	sudo -l	sudo -l	sudo -l
+53. Cron	Review system cron entries.	ls -la /etc/cron*	ls -la /etc/cron*	ls -la /etc/cron*
+54. Systemd timers	Review systemd timers.	systemctl list-timers --all	systemctl list-timers --all	systemctl list-timers --all
+55. Services	List running services.	systemctl --type=service --state=running	systemctl --type=service --state=running	systemctl --type=service --state=running
+56. Startup services	List enabled services.	systemctl list-unit-files --type=service --state=enabled	systemctl list-unit-files --type=service --state=enabled	systemctl list-unit-files --type=service --state=enabled
+57. Recently changed files	Find files modified in last day.	find / -mtime -1 -type f 2>/dev/null	find /etc /var/www -mtime -1 -type f 2>/dev/null	find /etc /var/www -mtime -1 -type f 2>/dev/null
+58. Large files	Find unexpectedly large files.	find / -type f -size +100M 2>/dev/null	find / -type f -size +100M 2>/dev/null	find / -type f -size +100M 2>/dev/null
+59. SUID review	Review SUID binaries.	find / -perm -4000 -type f 2>/dev/null	find / -perm -4000 -type f 2>/dev/null	find / -perm -4000 -type f 2>/dev/null
+Network Defense
+# / Command	Purpose	Syntax	Example 1	Example 2
+60. Tcpdump host	Capture traffic to/from one host.	tcpdump -nn host IP	sudo tcpdump -nn host 10.10.10.5	sudo tcpdump -nn host 10.10.10.5
+61. Tcpdump port	Capture traffic on one port.	tcpdump -nn port PORT	sudo tcpdump -nn port 53	sudo tcpdump -nn port 53
+62. Tcpdump write pcap	Write packet capture to file.	tcpdump -i IFACE -w FILE.pcap	sudo tcpdump -i eth0 -w incident.pcap	sudo tcpdump -i eth0 -w incident.pcap
+63. Tcpdump read pcap	Read packet capture file.	tcpdump -r FILE.pcap	tcpdump -r incident.pcap | head	tcpdump -r incident.pcap | head
+64. Wireshark DNS filter	Filter DNS traffic in Wireshark.	dns	dns	dns
+65. Wireshark HTTP filter	Filter HTTP traffic in Wireshark.	http	http	http
+66. Wireshark IP filter	Filter traffic involving an IP.	ip.addr == IP	ip.addr == 10.10.10.5	ip.addr == 10.10.10.5
+67. Wireshark TCP stream	Follow a TCP stream by number.	tcp.stream eq N	tcp.stream eq 3	tcp.stream eq 3
+68. Zeek read pcap	Analyze pcap with Zeek.	zeek -r FILE.pcap	zeek -r incident.pcap	zeek -r incident.pcap
+69. Zeek conn log	Review Zeek connection summary.	cat conn.log	cat conn.log | head	cat conn.log | head
+70. Suricata pcap	Run Suricata against a pcap.	suricata -r FILE.pcap -l OUTDIR	suricata -r incident.pcap -l ./suricata-out	suricata -r incident.pcap -l ./suricata-out
+71. Suricata fast log	Watch Suricata alerts.	tail -f fast.log	tail -f /var/log/suricata/fast.log	tail -f /var/log/suricata/fast.log
+72. DNS query logs	Review BIND DNS queries.	grep "query" /var/log/named/query.log	grep "query" /var/log/named/query.log | tail	grep "query" /var/log/named/query.log | tail
+73. Nmap internal audit	Run approved internal exposure scan.	nmap -sV -oA scan TARGET	nmap -sV -oA scan 10.10.10.0/24	nmap -sV -oA scan 10.10.10.0/24
+Forensics
+# / Command	Purpose	Syntax	Example 1	Example 2
+74. SHA256 hash	Create SHA256 hash for evidence.	sha256sum FILE	sha256sum suspicious.bin	sha256sum suspicious.bin
+75. MD5 hash	Create MD5 hash when required by tooling.	md5sum FILE	md5sum suspicious.bin	md5sum suspicious.bin
+76. File type	Identify file type.	file FILE	file suspicious.bin	file suspicious.bin
+77. Strings	Extract readable strings.	strings FILE	strings suspicious.bin | less	strings suspicious.bin | less
+78. ExifTool	Read metadata.	exiftool FILE	exiftool image.jpg	exiftool image.jpg
+79. Stat	Show timestamps and file metadata.	stat FILE	stat suspicious.bin	stat suspicious.bin
+80. Find by hash list	Hash files in current directory.	sha256sum *	sha256sum * > hashes.txt	sha256sum * > hashes.txt
+81. YARA scan	Scan files with YARA rules.	yara RULES.yar PATH	yara rules.yar /tmp/samples	yara rules.yar /tmp/samples
+82. ClamAV scan	Scan files with ClamAV.	clamscan -r PATH	clamscan -r /tmp/samples	clamscan -r /tmp/samples
+83. Volatility info	Identify Windows memory image profile/info.	vol.py -f memory.raw windows.info	vol.py -f memory.raw windows.info	vol.py -f memory.raw windows.info
+84. Volatility processes	List processes from memory.	vol.py -f memory.raw windows.pslist	vol.py -f memory.raw windows.pslist	vol.py -f memory.raw windows.pslist
+85. Volatility network	Find network artifacts in memory.	vol.py -f memory.raw windows.netscan	vol.py -f memory.raw windows.netscan	vol.py -f memory.raw windows.netscan
+86. Timeline bodyfile	Create filesystem bodyfile.	fls -r -m / IMAGE.dd > bodyfile.txt	fls -r -m / disk.dd > bodyfile.txt	fls -r -m / disk.dd > bodyfile.txt
+87. Mactime timeline	Create file activity timeline.	mactime -b bodyfile.txt > timeline.csv	mactime -b bodyfile.txt > timeline.csv	mactime -b bodyfile.txt > timeline.csv
+SIEM/Hunting
+# / Command	Purpose	Syntax	Example 1	Example 2
+88. Sigma convert	Convert Sigma rule to Splunk query.	sigmac -t splunk RULE.yml	sigmac -t splunk suspicious_powershell.yml	sigmac -t splunk suspicious_powershell.yml
+89. Splunk failed logons	Search failed Windows logons.	index=wineventlog EventCode=4625	index=wineventlog EventCode=4625 | stats count by Account_Name, src_ip	index=wineventlog EventCode=4625 | stats count by Account_Name, src_ip
+90. Splunk PowerShell	Search PowerShell script block events.	index=wineventlog EventCode=4104	index=wineventlog EventCode=4104 | table _time host Message	index=wineventlog EventCode=4104 | table _time host Message
+91. Splunk rare process	Find rare process names.	index=edr sourcetype=process | rare process_name	index=edr sourcetype=process | rare process_name by host	index=edr sourcetype=process | rare process_name by host
+92. KQL failed signins	Find failed Entra ID sign-ins.	SigninLogs | where ResultType != 0	SigninLogs | where ResultType != 0 | summarize count() by UserPrincipalName	SigninLogs | where ResultType != 0 | summarize count() by UserPrincipalName
+93. KQL risky users	Review risky user events.	AADUserRiskEvents | summarize count() by UserPrincipalName	AADUserRiskEvents | summarize count() by UserPrincipalName	AADUserRiskEvents | summarize count() by UserPrincipalName
+94. KQL process events	Hunt PowerShell process events.	DeviceProcessEvents | where FileName =~ "powershell.exe"	DeviceProcessEvents | where FileName =~ "powershell.exe" | project Timestamp,DeviceName,ProcessCommandLine	DeviceProcessEvents | where FileName =~ "powershell.exe" | project Timestamp,DeviceName,ProcessCommandLine
+95. KQL network events	Hunt suspicious network ports.	DeviceNetworkEvents | where RemotePort in (4444,8080)	DeviceNetworkEvents | where RemotePort in (4444,8080) | project Timestamp,DeviceName,RemoteIP	DeviceNetworkEvents | where RemotePort in (4444,8080) | project Timestamp,DeviceName,RemoteIP
+96. Osquery processes	List processes with osquery.	select pid,name,path,cmdline from processes;	osqueryi "select pid,name,path,cmdline from processes limit 10;"	osqueryi "select pid,name,path,cmdline from processes limit 10;"
+97. Osquery users	List local users with osquery.	select username,uid,shell from users;	osqueryi "select username,uid,shell from users;"	osqueryi "select username,uid,shell from users;"
+98. Osquery listening ports	List listening ports with osquery.	select * from listening_ports;	osqueryi "select port,protocol,pid from listening_ports;"	osqueryi "select port,protocol,pid from listening_ports;"
+99. Osquery crontab	Review cron with osquery.	select * from crontab;	osqueryi "select * from crontab;"	osqueryi "select * from crontab;"
+Hardening
+# / Command	Purpose	Syntax	Example 1	Example 2
+100. UFW enable	Enable uncomplicated firewall.	ufw enable	sudo ufw enable	sudo ufw enable
+101. UFW allow SSH	Allow SSH through UFW.	ufw allow 22/tcp	sudo ufw allow 22/tcp	sudo ufw allow 22/tcp
+102. Firewalld services	Review firewalld policy.	firewall-cmd --list-all	sudo firewall-cmd --list-all	sudo firewall-cmd --list-all
+103. Firewalld add service	Allow HTTPS permanently.	firewall-cmd --add-service=https --permanent	sudo firewall-cmd --add-service=https --permanent && sudo firewall-cmd --reload	sudo firewall-cmd --add-service=https --permanent && sudo firewall-cmd --reload
+104. SELinux status	Check SELinux mode.	sestatus	sestatus	sestatus
+105. AppArmor status	Check AppArmor profiles.	aa-status	sudo aa-status	sudo aa-status
+106. Auditd rules	List auditd rules.	auditctl -l	sudo auditctl -l	sudo auditctl -l
+107. Lynis audit	Run Linux hardening audit.	lynis audit system	sudo lynis audit system	sudo lynis audit system
+108. OpenSCAP eval	Run SCAP compliance evaluation.	oscap xccdf eval --profile PROFILE FILE.xml	oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_cis ssg-rhel.xml	oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_cis ssg-rhel.xml
+109. Windows audit policy	Review Windows audit policy.	auditpol /get /category:*	auditpol /get /category:*	auditpol /get /category:*
+110. Windows firewall	Review Windows firewall status.	Get-NetFirewallProfile	Get-NetFirewallProfile | Select Name,Enabled	Get-NetFirewallProfile | Select Name,Enabled
+111. BitLocker status	Check BitLocker state.	manage-bde -status	manage-bde -status	manage-bde -status
+Cloud Defense
+# / Command	Purpose	Syntax	Example 1	Example 2
+112. AWS identity	Confirm AWS identity for investigation.	aws sts get-caller-identity	aws sts get-caller-identity	aws sts get-caller-identity
+113. CloudTrail lookup	Search CloudTrail events.	aws cloudtrail lookup-events	aws cloudtrail lookup-events --max-results 10	aws cloudtrail lookup-events --max-results 10
+114. AWS public buckets	Check bucket public policy status.	aws s3api get-bucket-policy-status --bucket BUCKET	aws s3api get-bucket-policy-status --bucket my-bucket	aws s3api get-bucket-policy-status --bucket my-bucket
+115. AWS GuardDuty findings	List GuardDuty findings.	aws guardduty list-findings --detector-id ID	aws guardduty list-findings --detector-id 12abc	aws guardduty list-findings --detector-id 12abc
+116. Azure account	Confirm Azure context.	az account show	az account show	az account show
+117. Azure sign-ins	Review Azure activity logs.	az monitor activity-log list	az monitor activity-log list --max-events 10	az monitor activity-log list --max-events 10
+118. GCP auth	Confirm GCP identities.	gcloud auth list	gcloud auth list	gcloud auth list
+119. GCP logging read	Search GCP logs.	gcloud logging read "severity>=ERROR"	gcloud logging read "severity>=ERROR" --limit 10	gcloud logging read "severity>=ERROR" --limit 10
+Kubernetes/Docker Defense
+# / Command	Purpose	Syntax	Example 1	Example 2
+120. Pods all namespaces	List pods across namespaces.	kubectl get pods -A	kubectl get pods -A	kubectl get pods -A
+121. K8s events	Review Kubernetes events.	kubectl get events -A --sort-by=.lastTimestamp	kubectl get events -A --sort-by=.lastTimestamp | tail	kubectl get events -A --sort-by=.lastTimestamp | tail
+122. K8s auth can-i	Review current Kubernetes permissions.	kubectl auth can-i --list	kubectl auth can-i --list	kubectl auth can-i --list
+123. K8s audit logs	Review component logs.	kubectl logs -n kube-system POD	kubectl logs -n kube-system kube-apiserver-node1	kubectl logs -n kube-system kube-apiserver-node1
+124. Docker ps	List containers.	docker ps -a	docker ps -a	docker ps -a
+125. Docker logs	Review container logs.	docker logs CONTAINER	docker logs web01 --tail 100	docker logs web01 --tail 100
+126. Docker inspect	Inspect container config.	docker inspect CONTAINER	docker inspect web01	docker inspect web01
+127. Docker stats	Monitor container resource usage.	docker stats	docker stats	docker stats
+Field Notes
+Build your own running notes in Markdown. Capture command, context, target, timestamp, output location, and what you learned.
+Red team habit: enumerate first, validate second, exploit only within scope, document everything.
+Blue team habit: preserve evidence, hash files before moving, timeline activity, and correlate host, identity, network, and cloud telemetry.
+The best operators are not walking encyclopedias. They are calm troubleshooters with sharp notes and repeatable workflows.
